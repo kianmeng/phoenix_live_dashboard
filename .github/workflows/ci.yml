@@ -34,19 +34,32 @@ jobs:
       matrix:
         include:
           - pair:
-              elixir: 1.14.5
-              otp: 24.3
+              elixir: "1.14"
+              otp: "24"
           - pair:
-              elixir: 1.15.6
-              otp: 26.0.2
+              elixir: "1.15"
+              otp: "26"
+          - pair:
+              elixir: "1.18"
+              otp: "27"
             lint: lint
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - uses: erlef/setup-beam@v1
         with:
           otp-version: ${{matrix.pair.otp}}
           elixir-version: ${{matrix.pair.elixir}}
+
+      - name: Cache Mix
+        uses: actions/cache@v4
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-${{ matrix.pair.elixir }}-${{ matrix.pair.otp }}-${{ hashFiles('**/mix.lock') }}-test
+          restore-keys: |
+            ${{ runner.os }}-mix-${{ matrix.pair.elixir }}-${{ matrix.pair.otp }}-
 
       - name: Install Dependencies
         run: mix deps.get --only test
@@ -68,20 +81,38 @@ jobs:
     name: npm test
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - uses: erlef/setup-beam@v1
         with:
-          elixir-version: 1.14.0
-          otp-version: 24.3
+          elixir-version: "1.18"
+          otp-version: "27"
+
+      - name: Cache Mix
+        uses: actions/cache@v4
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-${{ matrix.pair.elixir }}-${{ matrix.pair.otp }}-${{ hashFiles('**/mix.lock') }}-test
+          restore-keys: |
+            ${{ runner.os }}-mix-${{ matrix.pair.elixir }}-${{ matrix.pair.otp }}-
 
       - name: Install Dependencies
         run: mix deps.get --only test
 
       - name: Setup Node.js 18.x
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: npm install and test
         run: |

@@ -6,7 +6,7 @@ defmodule Phoenix.LiveDashboard.LayoutView do
 
   def render("dash.html", assigns), do: dash(assigns)
 
-  defp csp_nonce(conn, type) when type in [:script, :style, :img] do
+  defp csp_nonce(conn, type) when type in [:script, :style] do
     csp_nonce_assign_key = conn.private.csp_nonce_assign_key[type]
     conn.assigns[csp_nonce_assign_key]
   end
@@ -35,6 +35,22 @@ defmodule Phoenix.LiveDashboard.LayoutView do
         :live_dashboard_asset_path,
         [conn, asset, hash]
       )
+    end
+  end
+
+  defp custom_head_tags(assigns, key) do
+    case assigns do
+      %{^key => components} when is_list(components) ->
+        assigns = assign(assigns, :components, components)
+
+        ~H"""
+        <%= for component <- @components do %>
+          <%= component.(assigns) %>
+        <% end %>
+        """
+
+      _ ->
+        nil
     end
   end
 end

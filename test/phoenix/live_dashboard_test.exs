@@ -17,19 +17,16 @@ defmodule Phoenix.LiveDashboardTest do
   test "embeds csp nonces" do
     html =
       build_conn()
-      |> assign(:img_csp_nonce, "img_nonce")
       |> assign(:script_csp_nonce, "script_nonce")
       |> assign(:style_csp_nonce, "style_nonce")
       |> get("/dashboard/home")
       |> html_response(200)
 
-    refute html =~ "img_nonce"
     refute html =~ "script_nonce"
     refute html =~ "style_nonce"
 
     html =
       build_conn()
-      |> assign(:img_csp_nonce, "img_nonce")
       |> assign(:script_csp_nonce, "script_nonce")
       |> assign(:style_csp_nonce, "style_nonce")
       |> get("/config/nonode@nohost/home")
@@ -37,7 +34,6 @@ defmodule Phoenix.LiveDashboardTest do
 
     assert html =~ ~s|<script nonce="script_nonce"|
     assert html =~ ~s|<style nonce="style_nonce"|
-    assert html =~ ~s|<img nonce="img_nonce"|
   end
 
   @tag :integration
